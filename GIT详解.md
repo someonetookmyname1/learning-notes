@@ -16,10 +16,10 @@
 4. **​代码保存**：代码保存并备份在远程仓库，且开发者的本地仓库都是一个完整的备份，极大地降低了项目数据丢失的风险
 
 
-## 存储本质
+## 基础
 
 
-### 结构
+### .git目录结构
 
 
 `Git`将所有版本控制数据存储为​​四种类型（`​​Blob`、`Tree`、`Commit`、`Tag`）的对象​​，所有对象：
@@ -44,9 +44,10 @@
 └── hooks/        # 客户端或服务端的钩子脚本（默认有示例脚本）
 
 # 其中：
-.git/objects
+.git/objects/
 ├── f2/        # 哈希值的前两位作为目录名
-│   └── 4f6c8d... # 完整哈希值 = f2 + 4f6c8d... → f24f6c8d...
+│   ├── 4f6c8d... # 完整哈希值 = f2 + 4f6c8d... → f24f6c8d...
+│   └── ...
 ├── info/     # 存储对象额外信息
 └── pack/     # 打包压缩后的对象（优化存储）
 ```
@@ -55,13 +56,13 @@
 ### 四种核心Git对象
 
 
-一、**`​​Blob`对象​（`Binary Large Object`）**
+**`​​Blob`对象​（`Binary Large Object`）**：
 
 - **​​存储内容**​​：​文件快照，即​​文件的实际数据​​（不含文件名、权限等元数据）
 
 - ​**​创建时机​**​：`git add`时生成
 
-二、**`Tree`对象**
+**`Tree`对象**：
    
 - **​​存储内容​**​：​目录结构的快照​
   
@@ -71,7 +72,7 @@
 
 - **​​创建时机​**​：执行`git commit`时生成
 
-三、**`Commit`对象**
+**`Commit`对象**：
    
 - ​**​存储内容​**​：​​​提交的元数据​
   
@@ -83,7 +84,7 @@
 
 - ​**​创建时机​**​：执行`git commit`时生成
 
-四、**`Tag`对象（可选）**
+**`Tag`对象（可选）**：
    
 - **​​存储内容​**​：标签的引用（如版本发布标记）
 
@@ -129,7 +130,7 @@ echo "Hello, World!" > hello.txt
 git add hello.txt
 ```
 
-- **效果**：`Git`读取`hello.txt`的内容："Hello, World!"，并计算内容的`SHA-1`哈希（假设为`60f1d2d...`），然后创建`​​Blob`对象，存储在`.git/objects/60/f1d2d`​：
+- **效果**：`Git`读取`hello.txt`的内容："Hello, World!"，并计算内容的`SHA-1`哈希（假设为`60f1d2d...`），然后创建`​​Blob`对象，存储在`.git/objects/60/f1d2d...`​：
 ```bash
 echo -n "Hello, World!" | git hash-object --stdin
 # 输出：60f1d2d
@@ -137,7 +138,7 @@ echo -n "Hello, World!" | git hash-object --stdin
 
 - **`.git/objects`目录结构**：
 ```bash
-.git/objects
+.git/objects/
 ├── 60/  # ​​Blob对象1       
 │   └── f1d2d...
 └── ...
@@ -157,7 +158,7 @@ git add README.md
 
 - **`.git/objects`目录结构**：
 ```bash
-.git/objects
+.git/objects/
 ├── 60/  # ​​Blob对象1       
 │   └── f1d2d...
 ├── 8c/  # ​​Blob对象2       
@@ -180,14 +181,14 @@ git commit -m "Initial commit"
 
 - **效果**：
 
-1. 创建当前目录结构快照，计算其`SHA-1`（假设为`f24f6c8d...`），然后创建`​​Tree`对象，存储在`.git/objects/f2/4f6c8d`​：
+创建当前目录结构快照，计算其`SHA-1`（假设为`f24f6c8d...`），然后创建`​​Tree`对象，存储在`.git/objects/f2/4f6c8d...`​：
 ```bash
 # 数据结构：
 100644 blob 60f1d2d... hello.txt
 100644 blob 8c9d07... README.md
 ```
 
-1. 创建`Commit`内容，计算其`SHA-1`（假设为`1a2b3c4d...`），然后创建`​Commit`对象，存储在`.git/objects/1a/2b3c4d`​：
+创建提交内容，计算其`SHA-1`（假设为`1a2b3c4d...`），然后创建`​Commit`对象，存储在`.git/objects/1a/2b3c4d...`​：
 ```bash
 # 数据结构：
 tree f24f6c8d...        # 指向刚创建的 Tree
@@ -197,7 +198,7 @@ committer You <you@test.com> 1690640000 +0800
 Initial commit
 ```
 
-3. 更新分支指针
+更新分支指针：
 ```bash
 # 查看 .git/refs/heads/main
 cat .git/refs/heads/main
@@ -232,26 +233,26 @@ git commit -m "Update greeting"
 
 - **效果**：
 
-1. 创建新`Blob`：新内容"Hello, Git!"，生成新`Blob`（假设`SHA-1`为`5d308e9a...`）
+创建新`Blob`：新内容"Hello, Git!"，生成新`Blob`（假设`SHA-1`为`5d308e9a...`）
 
-2. 创建新`Tree`：创建当前目录结构快照，生成新`​​Tree`（假设`SHA-1`为`9a0b1c2d...`）
+创建新`Tree`：创建当前目录结构快照，生成新`​​Tree`（假设`SHA-1`为`9a0b1c2d...`）：
 ```bash
 # 修改文件
 100644 blob 5d308e9a... hello.txt    # 更新为新的 Blob
-100644 blob 8c9d07... README.md    # 未修改，复用旧 Blob
+100644 blob 8c9d07... README.md      # 未修改，复用旧 Blob
 ```
 
-3. 创建新`Commit`：生成新`Commit`（假设`SHA`为`5d6e7f8a...`）
+创建新`Commit`：创建新提交内容，生成新`Commit`对象（假设`SHA-1`为`5d6e7f8a...`）：
 ```bash
 tree 9a0b1c2d...             # 新 Tree
-parent 1a2b3c4d...         # 指向父提交
+parent 1a2b3c4d...           # 指向父提交
 author ... 
 committer ...
 
 Update greeting
 ```
 
-4. 更新分支指针
+更新分支指针：
 ```bash
 cat .git/refs/heads/main
 # 现在指向 5d6e7f8a...
@@ -289,31 +290,252 @@ cat .git/refs/heads/main
 2. **若某次`commit`中，`git add`了一个新文件，则`GIT`会存储该文件的完整内容为一个`​​Blob`对象；假设后续的`commit`中，该文件内容一直不变，则生成的`SHA-1`哈希值也不变，`commit`也会一直复用初次生成的`​​Blob`对象；一旦该文件内容发生了变化，则生成的`SHA-1`哈希值也会改变，`GIT`就会创建全新的`​​Blob`对象**
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## 分支
 
-分支的本质是指向某个提交（`commit`）的引用，仅需41字节存储（40位`SHA-1` + 换行符）
 
-### `git branch`
+### .git/refs/heads/目录结构
+
+
+分支的本质是指向某个提交（`commit`）的引用，仅需41字节存储（40位`SHA-1` + 换行符）
+```bash
+.git/refs/heads/
+├── main    # 主分支指针文件
+├── branch1 # 功能分支
+├── branch2
+└── ...
+
+# 每个文件对应一个分支，内容为​​该分支最新提交的完整 SHA-1 哈希值​​
+cat .git/refs/heads/main
+# 输出：1a2b3c4d5e6f7890abcdef1234567890abcdef12
+```
+
+
+### git branch命令
+
 
 `git branch`：`Git`中管理代码开发线的核心命令，用于​​创建、查看和删除分支​​。
 
+**查看分支**：
+```bash
+# 查看所有​​本地分支​
+git branch
+# 输出：
+* main     # *标记当前所在分支
+  branch1
+  branch2
+
+# -v：列出所有​​本地分支​​，并显示每个分支的​​最新提交信息摘要​​（-vv可显示更具体内容）
+git branch -v
+# 输出：
+* main a1b2c3d [ahead 1] [Fix login bug]         # ahead N：本地有N个提交未推送到远程
+  branch1 d4e5f6a [behind 3] [Add user profile]  # behind M：远程有M个提交未合并到本地
+  branch2 8c9d07e [gone] [Emergency patch]       # gone：上游分支已被删除
+
+# -r：查看远程分支
+git branch -r
+# 输出：
+origin/main
+```
+
+**创建分支**：
+```bash
+git branch branch3            # 基于当前提交创建分支
+git branch branch4 5a3b8c     # 基于特定提交创建分支
+```
+
+**删除分支**：
+```bash
+git branch -d feature-tmp  # 安全删除（已合并的分支）
+git branch -D feature-exp  # 强制删除（未合并的分支）
+```
+
+**分支重命名**：
+```bash
+git branch -m old-name new-name
+```
+
+
+## 检出
+
+
+### .git/HEAD文件
+
+
+**​常规分支模式：`HEAD`存储​分支​符号引用**：
+```bash
+ref: refs/heads/main  # 表示当前位于main分支，Git通过此路径找到实际提交：.git/refs/heads/main
+```
+
+**分离头指针模式（Detached HEAD）：`HEAD`​直接存储​提交哈希**：
+```bash
+1a2b3c4d5e6f7890abcdef1234567890abcdef12  # 表示当前不关联任何分支，需手动创建分支保存新提交
+```
+
+
+### git checkout命令
+
+
+**分支操作**：
+```bash
+# 切换到已存在的分支
+git checkout <branch-name>
+
+# 创建并切换到新分支（最常用！）
+git checkout -b <new-branch>
+
+# 基于特定提交创建分支
+git checkout -b <new-branch> <commit-hash>
+
+# 切换到远程分支（自动创建追踪分支）
+git checkout <remote-branch>
+# 示例：git checkout origin/feature → 创建本地 feature 分支追踪 origin/feature
+```
+
+**文件恢复​**：
+```bash
+# 从暂存区或上次提交，恢复文件
+git checkout -- <file>
+
+# 从特定提交恢复文件
+git checkout <commit> -- <file>
+
+# 从上上个版本恢复文件
+git checkout HEAD~2 -- <file>
+
+# 递归恢复指定目录下​​所有已跟踪文件​​（​​不会恢复未跟踪文件​​，​​不会删除目录中新增的文件）
+git checkout -- <dir> 
+```
+
+**特殊模式​​**：
+```bash
+# 分离头指针模式（直接检出提交而非分支）
+git checkout <commit-hash>
+```
+
+
+## 配置
+
+
+### ​配置层级与优先级​
+
+
+`Git`配置分为三个层级，优先级从高到低：
+
+| 层级                     | 配置文件位置        | 设置命令                | 优先级 |
+| :---------------        | :---------------- | :--------------------- | :----- |
+| **本地 (Local)**         | `.git/config`     | `git config [--local]` | 最高   |
+| **全局/用户 (Global)**    | `~/.gitconfig`    | `git config --global`  | 中     |
+| **系统/所有用户 (System)** | `/etc/gitconfig`  | `git config --system`  | 最低   |
+```bash
+# .git/config示例：
+[core]
+        repositoryformatversion = 0                                 # Git仓库格式版本（0表示标准格式）
+        filemode = true                                             # 跟踪文件权限变化（Linux/Unix系统重要）
+        bare = false                                                # 表示这是非裸仓库（有工作目录）
+        logallrefupdates = true                                     # 记录所有引用更新到reflog
+[remote "origin"]
+        url = git@github.com:someonetookmyname1/learning-notes.git  # SSH协议URL（需要配置SSH密钥认证）
+        fetch = +refs/heads/*:refs/remotes/origin/*
+        # 获取规则：
+        #   +：表示强制更新
+        #   refs/heads/*：远程仓库的refs/heads目录，里面的每个文件对应一个远程分支
+        #   :refs/remotes/origin/*：映射到本地的远程分支镜像 
+[branch "main"]
+        remote = origin                                              # 设置上游远程仓库为origin
+        merge = refs/heads/main                                      # 设置默认合并目标为远程main分支
+[pull]
+        rebase = false                                               # 执行git pull时不使用rebase，而是默认的merge策略
+
+# ~/.gitconfig示例：
+[user]
+        name = Elliott                                               # 全局默认用户名
+        email = linjianqing1108@gmail.com                            # 全局默认邮箱
+```
+
+
+### git config命令
+
+
+**查看配置​​**：
+```bash
+# 查看所有配置（合并所有层级）
+git config --list
+# 输出：
+user.name=Elliott
+user.email=linjianqing1108@gmail.com
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+remote.origin.url=git@github.com:someonetookmyname1/learning-notes.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+branch.main.remote=origin
+branch.main.merge=refs/heads/main
+pull.rebase=false
+
+# 查看指定配置项
+git config user.name
+# 输出：
+Elliott
+
+# 查看配置来源
+git config --show-origin user.email
+# 输出：
+file:/home/elliott/.gitconfig   linjianqing1108@gmail.com
+```
+
+**设置配置​​**：
+```bash
+# 设置全局（此系统用户）用户名和用户邮箱（最常用！使用远程必设！）
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+
+# 设置本地（仅当前仓库）用户名
+git config [--local] user.name "Your Name"
+
+# 设置系统（所有系统用户）默认编辑器（定义了 Git 在需要用户输入文本时调用的默认编辑器）
+sudo git config --system core.editor "code --wait"
+```
+
+**编辑配置文件（用core.editor设置的编辑器打开）​​​**：
+```bash
+# 编辑本地配置
+git config --edit
+
+# 编辑全局配置
+git config --global --edit
+```
+
+**删除配置​​**：
+```bash
+git config --unset user.name
+git config --global --unset user.email
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 远程
+
 
 ### `git remote`
 
@@ -331,6 +553,18 @@ github  https://github.com/user/repo.git (fetch)
 github  https://github.com/user/repo.git (push)
 gitee   https://gitee.com/user/repo.git (fetch)
 gitee   https://gitee.com/user/repo.git (push)
+
+.git/refs/remotes/
+├── github/  # GitHub 远程仓库的跟踪分支
+│   ├── HEAD      # 指向 GitHub 仓库的默认分支
+│   ├── main      # GitHub 的 main 分支本地镜像
+│   ├── dev       # GitHub 的 dev 分支本地镜像
+│   └── feature   # GitHub 的 feature 分支本地镜像
+└── gitee/   # Gitee 远程仓库的跟踪分支
+    ├── HEAD      # 指向 Gitee 仓库的默认分支
+    ├── master    # Gitee 的 master 分支本地镜像
+    ├── develop   # Gitee 的 develop 分支本地镜像
+    └── hotfix    # Gitee 的 hotfix 分支本地镜像
 ```
 
 `git remote set-url <name> <new-url>`: 修改远程URL
