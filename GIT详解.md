@@ -433,6 +433,7 @@ git checkout <commit-hash>
         filemode = true                                             # 跟踪文件权限变化（Linux/Unix系统重要）
         bare = false                                                # 表示这是非裸仓库（有工作目录）
         logallrefupdates = true                                     # 记录所有引用更新到reflog
+        
 [remote "origin"]
         url = git@github.com:someonetookmyname1/learning-notes.git  # SSH协议URL（需要配置SSH密钥认证）
         fetch = +refs/heads/*:refs/remotes/origin/*
@@ -440,12 +441,25 @@ git checkout <commit-hash>
         #   +：表示强制更新
         #   refs/heads/*：远程仓库的refs/heads目录，里面的每个文件对应一个远程分支
         #   :refs/remotes/origin/*：映射到本地的远程分支镜像 
+
+[remote "gitee"]
+        url = git@gitee.com:giteename/learning-notes.git
+        fetch = +refs/heads/*:refs/remotes/gitee/*
+
 [branch "main"]
-        remote = origin                                              # 设置上游远程仓库为origin
+        remote = origin                                              # 设置默认上游远程仓库为origin
         merge = refs/heads/main                                      # 设置默认合并目标为远程main分支
+        # 表示直接使用命令 git push 和 git pull时，默认向远程origin的main分支推送和拉取
+        # 而要推送到其他实际上游分支时，需要指明“远程仓库名和分支名”，如 git push gitee main:master
+
+[branch "dev"]
+        remote = gitee 
+        merge = refs/heads/dev
+
 [pull]
         rebase = false                                               # 执行git pull时不使用rebase，而是默认的merge策略
-
+```
+```bash
 # ~/.gitconfig示例：
 [user]
         name = Elliott                                               # 全局默认用户名
@@ -469,8 +483,12 @@ core.bare=false
 core.logallrefupdates=true
 remote.origin.url=git@github.com:someonetookmyname1/learning-notes.git
 remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+remote.gitee.url=git@gitee.com:someonetookmyname1/learning-notes.git
+remote.gitee.fetch=+refs/heads/*:refs/remotes/gitee/*
 branch.main.remote=origin
 branch.main.merge=refs/heads/main
+branch.main.remote=gitee
+branch.main.merge=refs/heads/gitee
 pull.rebase=false
 
 # 查看指定配置项
@@ -513,31 +531,29 @@ git config --global --unset user.email
 ```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## 远程
 
 
+### .git/refs/remotes/目录结构 和 本地与远程分支的上下游关系
+
+`.git/refs/remotes/`目录存储着远程分支的信息（假设本地仓库配置了两个远程仓库：`github`和`gitee`）：
+```bash
+.git//refs/remotes/
+├── github/  # GitHub仓库的refs/heads目录映射
+│   ├── HEAD      # 指向 GitHub 仓库的默认分支，内容如：ref: refs/remotes/github/main
+│   ├── main      # GitHub仓库 的 main 分支本地镜像
+│   ├── dev       # GitHub仓库 的 dev 分支本地镜像
+│   └── feature   # GitHub仓库 的 feature 分支本地镜像
+└── gitee/   # Gitee仓库的refs/heads目录映射
+    ├── HEAD      # 指向 Gitee 仓库的默认分支，内容如：ref: refs/remotes/gitee/master
+    ├── master    # Gitee仓库 的 master 分支本地镜像
+    ├── develop   # Gitee仓库 的 develop 分支本地镜像
+    └── hotfix    # Gitee仓库 的 hotfix 分支本地镜像
+```
+
+
 ### `git remote`
+
 
 `git remote add <name> <url>`: 为已存在的本地仓库添加一个新的远程仓库关联
 ```bash
@@ -553,25 +569,15 @@ github  https://github.com/user/repo.git (fetch)
 github  https://github.com/user/repo.git (push)
 gitee   https://gitee.com/user/repo.git (fetch)
 gitee   https://gitee.com/user/repo.git (push)
-
-.git/refs/remotes/
-├── github/  # GitHub 远程仓库的跟踪分支
-│   ├── HEAD      # 指向 GitHub 仓库的默认分支
-│   ├── main      # GitHub 的 main 分支本地镜像
-│   ├── dev       # GitHub 的 dev 分支本地镜像
-│   └── feature   # GitHub 的 feature 分支本地镜像
-└── gitee/   # Gitee 远程仓库的跟踪分支
-    ├── HEAD      # 指向 Gitee 仓库的默认分支
-    ├── master    # Gitee 的 master 分支本地镜像
-    ├── develop   # Gitee 的 develop 分支本地镜像
-    └── hotfix    # Gitee 的 hotfix 分支本地镜像
 ```
 
 `git remote set-url <name> <new-url>`: 修改远程URL
 
 `git remote remove <name>`: 删除远程仓库
 
+
 ### `git clone`
+
 
 `git clone <url>`: 克隆远程仓库到本地
 ```bash
