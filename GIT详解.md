@@ -552,45 +552,64 @@ git config --global --unset user.email
 ```
 
 
-### `git remote`
+### git remote命令
 
 
-`git remote add <name> <url>`: 为已存在的本地仓库添加一个新的远程仓库关联
 ```bash
-git remote add origin https://github.com/user/new-repo.git
-```
+# git remote add <name> <url>：为已存在的本地仓库添加一个新的远程仓库关联
+git remote add origin https://github.com/user/repo.git
+git remote add gitee https://gitee.com/user/repo.git
 
-`git remote -v`: 列出所有已配置的远程仓库名称及其对应的URL地址
-```bash
-$ git remote add github https://github.com/user/repo.git
-$ git remote add gitee https://gitee.com/user/repo.git
-$ git remote -v
-github  https://github.com/user/repo.git (fetch)
-github  https://github.com/user/repo.git (push)
+
+git remote -v # 列出所有已配置的远程仓库名称及其对应的URL地址
+# 输出：
+origin  https://github.com/user/repo.git (fetch)
+origin  https://github.com/user/repo.git (push)
 gitee   https://gitee.com/user/repo.git (fetch)
 gitee   https://gitee.com/user/repo.git (push)
+
+git remote set-url <name> <new-url> # 修改远程URL
+
+git remote remove <name> # 删除远程仓库
 ```
 
-`git remote set-url <name> <new-url>`: 修改远程URL
 
-`git remote remove <name>`: 删除远程仓库
+### git fetch 命令
+
+`git fetch`用于​​从远程仓库获取最新数据但不自动合并​​的命令
+```bash
+git fetch # 获取默认远程（origin）的所有更新
+
+git fetch origin # 获取特定远程的更新
+
+git fetch origin main # 仅获取特定分支的更新
+
+git fetch --all # 获取所有配置的远程仓库更新
+
+git fetch --prune # 删除本地中，对应远程分支已不存在的远程分支镜像
+```
+
+
+### git merge 命令
+
+```bash
+
+```
 
 
 ### `git clone`
 
-
-`git clone <url>`: 克隆远程仓库到本地
 ```bash
+# git clone <url>： 克隆远程仓库到本地
 git clone git@codeup.aliyun.com:5f3f374f6207a1a8b17f933f/OasisCaliber.git
-```
-等效于
-```bash
+
+# 等效于：
 mkdir 远程仓库名 && cd 远程仓库名
 
 git init
 git remote add origin git@codeup.aliyun.com:5f3f374f6207a1a8b17f933f/OasisCaliber.git
 git fetch origin
-git checkout -b main origin/main
+git checkout -b main origin/main # ​​隐式完成了 git merge origin/main 的操作
 ```
 
 
